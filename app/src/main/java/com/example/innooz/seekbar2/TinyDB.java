@@ -16,6 +16,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 
 //import com.google.gson.Gson;
@@ -272,6 +273,7 @@ public class TinyDB {
     public ArrayList<String> getListString(String key) {
         return new ArrayList<String>(Arrays.asList(TextUtils.split(preferences.getString(key, ""), "‚‗‚")));
     }
+
 
     /**
      * Get boolean value from SharedPreferences at 'key'. If key not found, return 'defaultValue'

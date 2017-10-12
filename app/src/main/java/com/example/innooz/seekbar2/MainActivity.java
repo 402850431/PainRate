@@ -20,6 +20,8 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
+import android.widget.SimpleAdapter;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.xw.repo.BubbleSeekBar;
@@ -27,6 +29,9 @@ import com.xw.repo.BubbleSeekBar;
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -35,6 +40,14 @@ public class MainActivity extends AppCompatActivity {
     Button button, button2;
     TinyDB tinydb;
     String currentDateTimeString;
+
+/*
+    List<Map<String, String>> list = new ArrayList<Map<String, String>>();
+    Map<String, String> map;
+    private ArrayList<Float> numberList = new ArrayList<Float>();
+    private ArrayList<String> timeList = new ArrayList<String>();
+    SimpleAdapter simpleAdapter;
+*/
 
     private ArrayList<String> spfList2 = new ArrayList<String>();
     private ArrayAdapter<String> listAdapter2;
@@ -58,9 +71,12 @@ public class MainActivity extends AppCompatActivity {
         button2 = (Button)findViewById(R.id.button2);
 
         customActionBar();
+
         lv();
 //        rv();
     }
+
+
 
     private void customActionBar() {
 
@@ -132,33 +148,23 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
-/*
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.menu_main, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        if(item.getItemId() == R.id.cheryl)
-        {
-//            Toast.makeText(this,"Hello :)",Toast.LENGTH_SHORT).show();
-//            getFacebookIntent();
-
-            Intent facebookIntent = new Intent(Intent.ACTION_VIEW);
-            String facebookUrl = getFacebookPageURL(this);
-            facebookIntent.setData(Uri.parse(facebookUrl));
-            startActivity(facebookIntent);
-        }
-        return super.onOptionsItemSelected(item);
-    }
-*/
     private void lv() {
+
         if(spfList2!=null)
             spfList2 = tinydb.getListString("Data2");
 
-        listAdapter2 = new ArrayAdapter(MainActivity.this,android.R.layout.simple_list_item_1,spfList2);
+//        listAdapter2 = new ArrayAdapter<String>(MainActivity.this,android.R.layout.simple_list_item_1,spfList2);
+
+        listAdapter2 = new ArrayAdapter<String>(MainActivity.this,android.R.layout.simple_list_item_1,spfList2){
+            @Override
+            public View getView(int position, View convertView, ViewGroup parent) {
+                View view = super.getView(position, convertView, parent);
+                TextView textView = ((TextView) view.findViewById(android.R.id.text1));
+                textView.setTextSize(13);
+                return view;
+            }
+        };
+
         listView.setAdapter(listAdapter2);
 
         seekBar2.setOnProgressChangedListener(new BubbleSeekBar.OnProgressChangedListener() {
@@ -170,7 +176,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void getProgressOnActionUp(BubbleSeekBar bubbleSeekBar, int progress, float progressFloat) {
                 currentDateTimeString = DateFormat.getDateTimeInstance().format(new Date());
-                spfList2.add("\n數值:" + String.valueOf(progressFloat) + "  時間:" + currentDateTimeString + "\n");
+                spfList2.add("\n數值:" + String.valueOf(progressFloat) + "   時間:" + currentDateTimeString + "\n");
                 listAdapter2.notifyDataSetChanged();
 
             }
@@ -221,8 +227,7 @@ public class MainActivity extends AppCompatActivity {
 
         try {
             startActivity(Intent.createChooser(emailIntent, "Send mail..."));
-            finish();
-            Log.e("Finished send email", "");
+//            finish();
         } catch (android.content.ActivityNotFoundException ex) {
             Toast.makeText(MainActivity.this,
                     "There is no email client installed.", Toast.LENGTH_SHORT).show();
@@ -253,6 +258,28 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+/*
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_main, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if(item.getItemId() == R.id.cheryl)
+        {
+//            Toast.makeText(this,"Hello :)",Toast.LENGTH_SHORT).show();
+//            getFacebookIntent();
+
+            Intent facebookIntent = new Intent(Intent.ACTION_VIEW);
+            String facebookUrl = getFacebookPageURL(this);
+            facebookIntent.setData(Uri.parse(facebookUrl));
+            startActivity(facebookIntent);
+        }
+        return super.onOptionsItemSelected(item);
+    }
+*/
 }
 
 

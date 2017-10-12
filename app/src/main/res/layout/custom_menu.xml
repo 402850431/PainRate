@@ -10,7 +10,7 @@
         android:padding="4dp"
         android:textSize="18dp"
         android:layout_centerVertical="true"
-        android:text="哈囉你好嗎"
+        android:text="疼痛指數"
         android:textColor="@android:color/white"/>
 
     <Button
