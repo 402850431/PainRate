@@ -1,0 +1,14 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context="com.innoorz.fansdaq.MainActivity">
+
+    <item
+        android:id="@+id/cheryl"
+        android:showAsAction="ifRoom"
+        android:icon="@mipmap/facebook"
+        android:title="Made by Cheryl"
+        android:orderInCategory="0"
+        />
+
+</menu>
