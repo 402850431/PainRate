@@ -19,6 +19,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
 import android.widget.TextView;
@@ -32,6 +33,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -40,7 +43,10 @@ public class MainActivity extends AppCompatActivity {
     Button button, button2;
     TinyDB tinydb;
     String currentDateTimeString;
-
+    String[] TO = {"lee.shinyu@gmail.com"};
+    Timer timer = null;
+//    TimerTask timerTask = null;
+    boolean isTimerRunning = false;
 /*
     List<Map<String, String>> list = new ArrayList<Map<String, String>>();
     Map<String, String> map;
@@ -64,46 +70,83 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        findViewByIds();
+        customActionBar();
+        lv();
+//        rv();
+    }
+
+    private void findViewByIds() {
+        timer = new Timer(true);
         tinydb = new TinyDB(getApplicationContext());
         listView = (ListView)findViewById(R.id.listview2);
         seekBar2 = (BubbleSeekBar)findViewById(R.id.seekbar2);
         button = (Button)findViewById(R.id.button);
         button2 = (Button)findViewById(R.id.button2);
-
-        customActionBar();
-
-        lv();
-//        rv();
     }
-
-
 
     private void customActionBar() {
 
-        ActionBar mActionBar = getSupportActionBar();
+        final ActionBar mActionBar = getSupportActionBar();
         mActionBar.setDisplayShowHomeEnabled(false);
         mActionBar.setDisplayShowTitleEnabled(false);
         LayoutInflater mInflater = LayoutInflater.from(this);
 
-        View mCustomView = mInflater.inflate(R.layout.custom_menu, null);
-//        TextView mTitleTextView = (TextView) mCustomView.findViewById(R.id.title_text);
-//        mTitleTextView.setText("My Own Title");
+        final View mCustomView = mInflater.inflate(R.layout.custom_menu, null);
 
+        final EditText timeEt = (EditText) mCustomView.findViewById(R.id.timeEt);
 
-        final Button cheryl = (Button) mCustomView.findViewById(R.id.cheryl);
-//        cheryl.setText("Made By Cheryl");
-        cheryl.setOnClickListener(new View.OnClickListener() {
+        TextView minusTv = (TextView) mCustomView.findViewById(R.id.minus);
+        TextView increaseTv = (TextView) mCustomView.findViewById(R.id.increase);
+        minusTv.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent facebookIntent = new Intent(Intent.ACTION_VIEW);
-                String facebookUrl = getFacebookPageURL(getApplicationContext());
-                facebookIntent.setData(Uri.parse(facebookUrl));
-                startActivity(facebookIntent);
+                final int timeNum = Integer.parseInt(timeEt.getText().toString());
+                if(timeNum>1) {
+                    timeEt.setText(String.valueOf(timeNum - 1));
+                }
             }
         });
 
+        increaseTv.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                final int timeNum = Integer.parseInt(timeEt.getText().toString());
+                timeEt.setText(String.valueOf(timeNum + 1));
+            }
+        });
+
+        final Button startPauseBtn = (Button) mCustomView.findViewById(R.id.startBtn);
+        startPauseBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                int timeNum = Integer.parseInt(timeEt.getText().toString().trim()+"000");
+
+                if(!isTimerRunning && timeNum>0) { //start
+                    isTimerRunning=true;
+                    timeEt.setEnabled(false);
+                    timer = new Timer(true);
+                    timer.schedule(new MyTimerTask(MainActivity.this), timeNum, timeNum);
+                    startPauseBtn.setText("暫停");
+                }else { //pause
+                    isTimerRunning=false;
+                    stopTimer();
+                    timeEt.setEnabled(true);
+                    startPauseBtn.setText("開始");
+                }
+            }
+        });
         mActionBar.setCustomView(mCustomView);
         mActionBar.setDisplayShowCustomEnabled(true);
+
+    }
+
+    void stopTimer(){
+
+        if (timer != null) {
+            timer.cancel();
+            timer = null;
+        }
 
     }
 
@@ -148,6 +191,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
+
     private void lv() {
 
         if(spfList2!=null)
@@ -167,10 +211,11 @@ public class MainActivity extends AppCompatActivity {
 
         listView.setAdapter(listAdapter2);
 
+
+/*
         seekBar2.setOnProgressChangedListener(new BubbleSeekBar.OnProgressChangedListener() {
             @Override
             public void onProgressChanged(BubbleSeekBar bubbleSeekBar, int progress, float progressFloat) {
-
             }
 
             @Override
@@ -178,7 +223,6 @@ public class MainActivity extends AppCompatActivity {
                 currentDateTimeString = DateFormat.getDateTimeInstance().format(new Date());
                 spfList2.add("\n數值:" + String.valueOf(progressFloat) + "   時間:" + currentDateTimeString + "\n");
                 listAdapter2.notifyDataSetChanged();
-
             }
 
             @Override
@@ -186,6 +230,7 @@ public class MainActivity extends AppCompatActivity {
 
             }
         });
+*/
 
         button.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -205,6 +250,28 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+
+    private class MyTimerTask extends TimerTask
+    {
+        Context context;
+        boolean isTimerRunning;
+
+        MyTimerTask(Context context) {
+            this.context = context;
+        }
+
+        public void run() {
+                currentDateTimeString = DateFormat.getDateTimeInstance().format(new Date());
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        spfList2.add("\n數值:" + String.valueOf(seekBar2.getProgressFloat()) + "   時間:" + currentDateTimeString + "\n");
+                        listAdapter2.notifyDataSetChanged();
+                    }
+                });
+        }
+
+    }
     @Override
     protected void onPause() {
         super.onPause();
@@ -214,7 +281,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     protected void sendEmail() {
-        String[] TO = {"lee.shinyu@gmail.com"};
 //        String[] CC = {"cheryl.gao@inno-orz.com"}; //backup
         Intent emailIntent = new Intent(Intent.ACTION_SEND);
         emailIntent.setData(Uri.parse("mail to:"));
@@ -231,30 +297,6 @@ public class MainActivity extends AppCompatActivity {
         } catch (android.content.ActivityNotFoundException ex) {
             Toast.makeText(MainActivity.this,
                     "There is no email client installed.", Toast.LENGTH_SHORT).show();
-        }
-    }
-
-    public void getFacebookIntent() {
-        try {
-            Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("fb://profile/100001991750191"));
-            startActivity(intent);
-        } catch (Exception e) {
-            startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("http://www.facebook.com/MY_PAGE_NAME")));
-        }
-    }
-
-    public String getFacebookPageURL(Context context) {
-        PackageManager packageManager = context.getPackageManager();
-        try {
-            int versionCode = packageManager.getPackageInfo("com.facebook.katana", 0).versionCode;
-            if (versionCode >= 3002850) { //newer versions of fb app
-                return "fb://profile/100001991750191";
-//                return "fb://facewebmodal/f?href=" + FACEBOOK_URL;
-            } else { //older versions of fb app
-                return "fb://page/" + FACEBOOK_PAGE_ID;
-            }
-        } catch (PackageManager.NameNotFoundException e) {
-            return FACEBOOK_URL; //normal web url
         }
     }
 
