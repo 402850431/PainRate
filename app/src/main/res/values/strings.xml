@@ -2,11 +2,15 @@
     <string name="app_name">疼痛指數</string>
     <string name="painRate">疼痛指數</string>
     <string name="minus">－</string>
-    <string name="_1">1</string>
+    <string name="_1">1000</string>
     <string name="increase">＋</string>
     <string name="start">開始</string>
     <string name="pause">暫停</string>
     <string name="send_email">Send Email</string>
     <string name="clear_data">Clear Data</string>
-    <string name="s">s</string>
+    <string name="ms">ms</string>
+    <string name="name">姓名：</string>
+    <string name="reset">重置</string>
+    <string name="setting">設定</string>
+    <string name="exportExcel">Export Excel</string>
 </resources>

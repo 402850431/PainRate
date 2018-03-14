@@ -1,38 +1,35 @@
 package com.example.innooz.seekbar2;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.pm.ApplicationInfo;
-import android.content.pm.PackageManager;
-import android.graphics.drawable.ColorDrawable;
+import android.database.sqlite.SQLiteDatabase;
 import android.support.v7.app.ActionBar;
 import android.net.Uri;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
-import android.widget.SimpleAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.innooz.seekbar2.Tool.DatabaseDump;
+import com.example.innooz.seekbar2.Tool.MySQLite;
+import com.example.innooz.seekbar2.Tool.TinyDB;
 import com.xw.repo.BubbleSeekBar;
 
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -47,6 +44,7 @@ public class MainActivity extends AppCompatActivity {
     Timer timer = null;
 //    TimerTask timerTask = null;
     boolean isTimerRunning = false;
+    Button startPauseBtn;
 /*
     List<Map<String, String>> list = new ArrayList<Map<String, String>>();
     Map<String, String> map;
@@ -61,7 +59,13 @@ public class MainActivity extends AppCompatActivity {
     MyDataAdapter myDataAdapter;
     ArrayList<MyData> myDataList = new ArrayList<MyData>();
     RecyclerView recyclerView;
-
+    EditText timeEt;
+    TextView minusTv;
+    TextView increaseTv;
+    MySQLite mySQLite;
+    View dialogView;
+    DatabaseDump databaseDump;
+    SQLiteDatabase sqLiteDatabase;
     public static String FACEBOOK_URL = "https://www.facebook.com/kao.cheryl.1";
     public static String FACEBOOK_PAGE_ID = "100001991750191";
 
@@ -69,35 +73,20 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
         findViewByIds();
+
         customActionBar();
+        setUpDialog();
         lv();
 //        rv();
     }
 
-    private void findViewByIds() {
-        timer = new Timer(true);
-        tinydb = new TinyDB(getApplicationContext());
-        listView = (ListView)findViewById(R.id.listview2);
-        seekBar2 = (BubbleSeekBar)findViewById(R.id.seekbar2);
-        button = (Button)findViewById(R.id.button);
-        button2 = (Button)findViewById(R.id.button2);
-    }
+    private void setUpDialog() {
+        dialogView = View.inflate(this, R.layout.custom_dialog, null);
+        timeEt = (EditText) dialogView.findViewById(R.id.timeEt);
+        minusTv = (TextView) dialogView.findViewById(R.id.minus);
+        increaseTv = (TextView) dialogView.findViewById(R.id.increase);
 
-    private void customActionBar() {
-
-        final ActionBar mActionBar = getSupportActionBar();
-        mActionBar.setDisplayShowHomeEnabled(false);
-        mActionBar.setDisplayShowTitleEnabled(false);
-        LayoutInflater mInflater = LayoutInflater.from(this);
-
-        final View mCustomView = mInflater.inflate(R.layout.custom_menu, null);
-
-        final EditText timeEt = (EditText) mCustomView.findViewById(R.id.timeEt);
-
-        TextView minusTv = (TextView) mCustomView.findViewById(R.id.minus);
-        TextView increaseTv = (TextView) mCustomView.findViewById(R.id.increase);
         minusTv.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -115,30 +104,98 @@ public class MainActivity extends AppCompatActivity {
                 timeEt.setText(String.valueOf(timeNum + 1));
             }
         });
+/*open dialog*/
+        openDialog();
 
-        final Button startPauseBtn = (Button) mCustomView.findViewById(R.id.startBtn);
-        startPauseBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                int timeNum = Integer.parseInt(timeEt.getText().toString().trim()+"000");
+    }
 
-                if(!isTimerRunning && timeNum>0) { //start
-                    isTimerRunning=true;
-                    timeEt.setEnabled(false);
-                    timer = new Timer(true);
-                    timer.schedule(new MyTimerTask(MainActivity.this), timeNum, timeNum);
-                    startPauseBtn.setText("暫停");
-                }else { //pause
-                    isTimerRunning=false;
-                    stopTimer();
-                    timeEt.setEnabled(true);
-                    startPauseBtn.setText("開始");
-                }
-            }
-        });
+    private void openDialog() {
+        AlertDialog.Builder dialog = new AlertDialog.Builder(this);
+        dialog.setTitle("初始設定")
+                .setView(dialogView)
+                .setCancelable(false)
+                .setPositiveButton("確定", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        Toast.makeText(getApplicationContext(), "Start Recording", Toast.LENGTH_SHORT).show();
+                        int timeNum = Integer.parseInt(timeEt.getText().toString().trim());
+                        startTimer(timeNum);
+                    }
+                })
+                .show();
+    }
+
+    private void findViewByIds() {
+        timer = new Timer(true);
+        tinydb = new TinyDB(getApplicationContext());
+        listView = (ListView)findViewById(R.id.listview2);
+        seekBar2 = (BubbleSeekBar)findViewById(R.id.seekbar2);
+        button = (Button)findViewById(R.id.button);
+        button2 = (Button)findViewById(R.id.button2);
+        mySQLite = new MySQLite(this);
+        sqLiteDatabase = mySQLite.getWritableDatabase();
+        databaseDump = new DatabaseDump(sqLiteDatabase, "數據文檔");
+
+    }
+
+    private void customActionBar() {
+
+        final ActionBar mActionBar = getSupportActionBar();
+        mActionBar.setDisplayShowHomeEnabled(false);
+        mActionBar.setDisplayShowTitleEnabled(false);
+        LayoutInflater mInflater = LayoutInflater.from(this);
+
+        final View mCustomView = mInflater.inflate(R.layout.custom_menu, null);
+        startPauseBtn = (Button) mCustomView.findViewById(R.id.startBtn);
+        Button resetBtn = (Button) mCustomView.findViewById(R.id.resetBtn);
+        Button settingBtn = (Button) mCustomView.findViewById(R.id.settingBtn);
+
         mActionBar.setCustomView(mCustomView);
         mActionBar.setDisplayShowCustomEnabled(true);
 
+        startPauseBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                int timeNum = Integer.parseInt(timeEt.getText().toString().trim());
+                startTimer(timeNum);
+            }
+        });
+        resetBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                clearAllData();
+            }
+        });
+        settingBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                openDialog();
+            }
+        });
+    }
+
+    void clearAllData(){
+        listAdapter2.clear();
+        listAdapter2.notifyDataSetChanged();
+//        mySQLite.deleteAll();
+
+    }
+
+
+    void startTimer(int timeNum){
+
+        if(!isTimerRunning && timeNum>0) { //start
+            isTimerRunning=true;
+            timeEt.setEnabled(false);
+            timer = new Timer(true);
+            timer.schedule(new MyTimerTask(MainActivity.this), timeNum, timeNum);
+            startPauseBtn.setText("暫停");
+        }else { //pause
+            isTimerRunning=false;
+            stopTimer();
+            timeEt.setEnabled(true);
+            startPauseBtn.setText("開始");
+        }
     }
 
     void stopTimer(){
@@ -149,7 +206,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
     }
-
+/*
     private void rv() {
 
         recyclerView = (RecyclerView)findViewById(R.id.recyclerview);
@@ -191,7 +248,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
-
+*/
     private void lv() {
 
         if(spfList2!=null)
@@ -211,34 +268,14 @@ public class MainActivity extends AppCompatActivity {
 
         listView.setAdapter(listAdapter2);
 
-
-/*
-        seekBar2.setOnProgressChangedListener(new BubbleSeekBar.OnProgressChangedListener() {
-            @Override
-            public void onProgressChanged(BubbleSeekBar bubbleSeekBar, int progress, float progressFloat) {
-            }
-
-            @Override
-            public void getProgressOnActionUp(BubbleSeekBar bubbleSeekBar, int progress, float progressFloat) {
-                currentDateTimeString = DateFormat.getDateTimeInstance().format(new Date());
-                spfList2.add("\n數值:" + String.valueOf(progressFloat) + "   時間:" + currentDateTimeString + "\n");
-                listAdapter2.notifyDataSetChanged();
-            }
-
-            @Override
-            public void getProgressOnFinally(BubbleSeekBar bubbleSeekBar, int progress, float progressFloat) {
-
-            }
-        });
-*/
-
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 tinydb.putListString("Data2", spfList2);
-                sendEmail();
-//                tinydb.clear();
-//                listAdapter2.clear();
+                Log.e(">>>export", "export");
+                databaseDump.writeExcel("data_table");
+                databaseDump.exportData();
+//                sendEmail(); //tinydb.clear(); //listAdapter2.clear();
             }
         });
         button2.setOnClickListener(new View.OnClickListener() {
@@ -265,6 +302,8 @@ public class MainActivity extends AppCompatActivity {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
+//                        Log.e(">>>insert sql", "(date,value,time) =" + currentDateTimeString + "  " + currentDateTimeString + "  "+ seekBar2.getProgressFloat());
+                        mySQLite.insert("14 Mar 2018", "8:56:36 am", seekBar2.getProgressFloat());
                         spfList2.add("\n數值:" + String.valueOf(seekBar2.getProgressFloat()) + "   時間:" + currentDateTimeString + "\n");
                         listAdapter2.notifyDataSetChanged();
                     }

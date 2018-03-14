@@ -1,5 +1,5 @@
 
-package com.example.innooz.seekbar2;
+package com.example.innooz.seekbar2.Tool;
 
 import android.content.Context;
 import android.content.SharedPreferences;

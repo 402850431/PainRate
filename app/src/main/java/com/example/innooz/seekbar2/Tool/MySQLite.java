@@ -7,23 +7,26 @@ import android.database.DatabaseErrorHandler;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
-/**
- * Created by Test on 2018/3/11.
- */
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
-public class MySQLite extends SQLiteOpenHelper {
+public class  MySQLite extends SQLiteOpenHelper {
 
     private final static String DATABASE_NAME = "note_database";
     private final static int DATABASE_VERSION = 1;
     private final static String TABLE_NAME = "data_table";
-    private final static String FEILD_ID = "_id";
-    private final static String FEILD_TEXT = "item_text";
+    private final static String _ID = "_id";
+    private final static String DATE = "date";
+    private final static String TIME = "time";
+    private final static String VALUE = "value";
 
     private String sql =
-            "CREATE TABLE IF NOT EXISTS "+TABLE_NAME+"("+
-                    FEILD_ID+" INTEGER PRIMARY KEY AUTOINCREMENT,"+
-                    FEILD_TEXT+" TEXT"+
-                    ")";
+            "CREATE TABLE "+TABLE_NAME+"("+
+                    _ID +" INTEGER PRIMARY KEY AUTOINCREMENT, "+
+                    DATE + " DATE, "+
+                    TIME + " TIME, "+
+                    VALUE + " FLOAT "+
+                    ");";
     private SQLiteDatabase database;
 
 
@@ -39,6 +42,9 @@ public class MySQLite extends SQLiteOpenHelper {
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+//        onCreate(db);
+        final String DROP_TABLE = "DROP TABLE IF EXIST " + TABLE_NAME ;
+        db.execSQL(DROP_TABLE);
         onCreate(db);
     }
 
@@ -46,23 +52,32 @@ public class MySQLite extends SQLiteOpenHelper {
         Cursor cursor = database.query(TABLE_NAME, null, null, null, null, null, null);
         return cursor;
     }
-
-    public void insert(String itemText){
+    public void insert(String date, String time, float value){
         ContentValues values = new ContentValues();
-        values.put(FEILD_TEXT, itemText);
+        values.put(DATE, date);
+        values.put(TIME, time);
+        values.put(VALUE, value);
         database.insert(TABLE_NAME, null, values);
     }
 
     public void delete(int id){
-        database.delete(TABLE_NAME, FEILD_ID + "=" + Integer.toString(id), null);
+        database.delete(TABLE_NAME, _ID + "=" + Integer.toString(id), null);
     }
 
+    public void deleteAll(){ //***有問題
+
+        database.execSQL("DROP TABLE IF EXISTS '" + TABLE_NAME + "'");
+//        database.execSQL("delete from "+ TABLE_NAME);
+
+    }
+
+/*
     public void update(int id, String itemText){
         ContentValues values = new ContentValues();
         values.put(FEILD_TEXT, itemText);
-        database.update(TABLE_NAME, values, FEILD_ID + "=" + Integer.toString(id), null);
+        database.update(TABLE_NAME, values, _ID + "=" + Integer.toString(id), null);
     }
-
+*/
     public void close(){
         database.close();
     }
