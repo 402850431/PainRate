@@ -1,15 +1,18 @@
 package com.example.innooz.seekbar2;
 
+import android.Manifest;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.database.sqlite.SQLiteDatabase;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.ActionBar;
 import android.net.Uri;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -22,9 +25,9 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.example.innooz.seekbar2.Tool.DatabaseDump;
-import com.example.innooz.seekbar2.Tool.MySQLite;
-import com.example.innooz.seekbar2.Tool.TinyDB;
+import com.example.innooz.seekbar2.tools.DatabaseDump;
+import com.example.innooz.seekbar2.tools.MySQLite;
+import com.example.innooz.seekbar2.tools.TinyDB;
 import com.xw.repo.BubbleSeekBar;
 
 import java.text.DateFormat;
@@ -68,6 +71,10 @@ public class MainActivity extends AppCompatActivity {
     SQLiteDatabase sqLiteDatabase;
     public static String FACEBOOK_URL = "https://www.facebook.com/kao.cheryl.1";
     public static String FACEBOOK_PAGE_ID = "100001991750191";
+
+//    private ArrayList<String> PERMISSION_LIST = new ArrayList<String>(Manifest.permission.CAMERA, Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+    private final String[] PERMISSION_LIST = new String[]{Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE};
+    private final int PERMISSION_REQUEST_CODE = 10;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -134,7 +141,7 @@ public class MainActivity extends AppCompatActivity {
         button2 = (Button)findViewById(R.id.button2);
         mySQLite = new MySQLite(this);
         sqLiteDatabase = mySQLite.getWritableDatabase();
-        databaseDump = new DatabaseDump(sqLiteDatabase, "數據文檔");
+        databaseDump = new DatabaseDump(this, sqLiteDatabase, "數據文檔");
 
     }
 
@@ -271,6 +278,7 @@ public class MainActivity extends AppCompatActivity {
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                if (!hasStorePermission()) requestPermission();
                 tinydb.putListString("Data2", spfList2);
                 Log.e(">>>export", "export");
                 databaseDump.writeExcel("data_table");
@@ -285,6 +293,19 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+    }
+
+    private void requestPermission() {
+                ActivityCompat.requestPermissions(
+                        this,
+                        PERMISSION_LIST,
+                        PERMISSION_REQUEST_CODE
+                        );
+    }
+
+    private boolean hasStorePermission() {
+        return (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED)
+                && ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED;
     }
 
 
@@ -303,8 +324,8 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void run() {
 //                        Log.e(">>>insert sql", "(date,value,time) =" + currentDateTimeString + "  " + currentDateTimeString + "  "+ seekBar2.getProgressFloat());
-                        mySQLite.insert("14 Mar 2018", "8:56:36 am", seekBar2.getProgressFloat());
-                        spfList2.add("\n數值:" + String.valueOf(seekBar2.getProgressFloat()) + "   時間:" + currentDateTimeString + "\n");
+//                        mySQLite.insert("14 Mar 2018", "8:56:36 am", seekBar2.getProgressFloat());
+//                        spfList2.add("\n數值:" + String.valueOf(seekBar2.getProgressFloat()) + "   時間:" + currentDateTimeString + "\n");
                         listAdapter2.notifyDataSetChanged();
                     }
                 });
