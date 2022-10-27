@@ -40,8 +40,8 @@ import java.util.TimerTask;
 public class MainActivity extends AppCompatActivity {
 
     BubbleSeekBar seekBar2;
-    ListView listView;
-    Button exportButton, clearDataButton;
+//    ListView listView;
+//    Button exportButton, clearDataButton;
     TinyDB tinydb;
     String currentDateTimeString;
     String[] TO = {"lee.shinyu@gmail.com"};
@@ -57,8 +57,11 @@ public class MainActivity extends AppCompatActivity {
     TextView increaseTv;
     MySQLite mySQLite;
     View dialogView;
+    AlertDialog.Builder dialog;
+
     DatabaseDump databaseDump;
     SQLiteDatabase sqLiteDatabase;
+
 
     private final String[] PERMISSION_LIST = new String[]{Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE};
     private final int PERMISSION_REQUEST_CODE = 10;
@@ -77,6 +80,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void setUpDialog() {
         dialogView = View.inflate(this, R.layout.custom_dialog, null);
+//        dialogView = LayoutInflater.from(this).inflate(R.layout.custom_dialog, R.layout.custom_dialog, false);
         timeEt = (EditText) dialogView.findViewById(R.id.timeEt);
         minusTv = (TextView) dialogView.findViewById(R.id.minus);
         increaseTv = (TextView) dialogView.findViewById(R.id.increase);
@@ -104,7 +108,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void openDialog() {
-        AlertDialog.Builder dialog = new AlertDialog.Builder(this);
+//        AlertDialog.Builder dialog = new AlertDialog.Builder(this);
+        dialog = new AlertDialog.Builder(this);
+
         dialog.setTitle("初始設定")
                 .setView(dialogView)
                 .setCancelable(false)
@@ -122,10 +128,10 @@ public class MainActivity extends AppCompatActivity {
     private void findViewByIds() {
         timer = new Timer(true);
         tinydb = new TinyDB(getApplicationContext());
-        listView = (ListView)findViewById(R.id.listview2);
+//        listView = (ListView)findViewById(R.id.listview2);
         seekBar2 = (BubbleSeekBar)findViewById(R.id.seekbar2);
-        exportButton = (Button)findViewById(R.id.button);
-        clearDataButton = (Button)findViewById(R.id.button2);
+//        exportButton = (Button)findViewById(R.id.button);
+//        clearDataButton = (Button)findViewById(R.id.button2);
         mySQLite = new MySQLite(this);
         sqLiteDatabase = mySQLite.getWritableDatabase();
         databaseDump = new DatabaseDump(this, sqLiteDatabase, "數據文檔");
@@ -143,6 +149,7 @@ public class MainActivity extends AppCompatActivity {
         startPauseBtn = (Button) mCustomView.findViewById(R.id.startBtn);
         Button resetBtn = (Button) mCustomView.findViewById(R.id.resetBtn);
         Button settingBtn = (Button) mCustomView.findViewById(R.id.settingBtn);
+        Button exportButton = (Button) mCustomView.findViewById(R.id.exploreBtn);
 
         mActionBar.setCustomView(mCustomView);
         mActionBar.setDisplayShowCustomEnabled(true);
@@ -166,6 +173,18 @@ public class MainActivity extends AppCompatActivity {
                 openDialog();
             }
         });
+        exportButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (!hasStorePermission()) {
+                    requestPermission();
+                } else {
+                    tinydb.putListString("Data2", spfList2);
+                    databaseDump.writeExcel("data_table");
+                }
+            }
+        });
+
     }
 
     void clearAllData(){
@@ -257,7 +276,9 @@ public class MainActivity extends AppCompatActivity {
             }
         };
 
-        listView.setAdapter(listAdapter2);
+//        listView.setAdapter(listAdapter2);
+
+/*
 
         exportButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -278,6 +299,7 @@ public class MainActivity extends AppCompatActivity {
                 clearAllData();
             }
         });
+*/
 
     }
 

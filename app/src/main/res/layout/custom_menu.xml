@@ -39,6 +39,13 @@
             android:layout_height="match_parent"
             android:text="@string/setting"/>
 
+        <Button
+            android:id="@+id/exploreBtn"
+            android:layout_width="60dp"
+            android:layout_gravity="center"
+            android:layout_height="match_parent"
+            android:text="@string/exportExcel"/>
+
     </LinearLayout>
 
 

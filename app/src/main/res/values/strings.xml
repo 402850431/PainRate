@@ -12,5 +12,5 @@
     <string name="name">姓名：</string>
     <string name="reset">重置</string>
     <string name="setting">設定</string>
-    <string name="exportExcel">Export Excel</string>
+    <string name="exportExcel">匯出</string>
 </resources>
