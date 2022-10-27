@@ -40,28 +40,17 @@ public class MainActivity extends AppCompatActivity {
 
     BubbleSeekBar seekBar2;
     ListView listView;
-    Button button, button2;
+    Button exportButton, clearDataButton;
     TinyDB tinydb;
     String currentDateTimeString;
     String[] TO = {"lee.shinyu@gmail.com"};
     Timer timer = null;
-//    TimerTask timerTask = null;
     boolean isTimerRunning = false;
     Button startPauseBtn;
-/*
-    List<Map<String, String>> list = new ArrayList<Map<String, String>>();
-    Map<String, String> map;
-    private ArrayList<Float> numberList = new ArrayList<Float>();
-    private ArrayList<String> timeList = new ArrayList<String>();
-    SimpleAdapter simpleAdapter;
-*/
 
     private ArrayList<String> spfList2 = new ArrayList<String>();
     private ArrayAdapter<String> listAdapter2;
 
-    MyDataAdapter myDataAdapter;
-    ArrayList<MyData> myDataList = new ArrayList<MyData>();
-    RecyclerView recyclerView;
     EditText timeEt;
     TextView minusTv;
     TextView increaseTv;
@@ -69,10 +58,7 @@ public class MainActivity extends AppCompatActivity {
     View dialogView;
     DatabaseDump databaseDump;
     SQLiteDatabase sqLiteDatabase;
-    public static String FACEBOOK_URL = "https://www.facebook.com/kao.cheryl.1";
-    public static String FACEBOOK_PAGE_ID = "100001991750191";
 
-//    private ArrayList<String> PERMISSION_LIST = new ArrayList<String>(Manifest.permission.CAMERA, Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE)
     private final String[] PERMISSION_LIST = new String[]{Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE};
     private final int PERMISSION_REQUEST_CODE = 10;
 
@@ -137,8 +123,8 @@ public class MainActivity extends AppCompatActivity {
         tinydb = new TinyDB(getApplicationContext());
         listView = (ListView)findViewById(R.id.listview2);
         seekBar2 = (BubbleSeekBar)findViewById(R.id.seekbar2);
-        button = (Button)findViewById(R.id.button);
-        button2 = (Button)findViewById(R.id.button2);
+        exportButton = (Button)findViewById(R.id.button);
+        clearDataButton = (Button)findViewById(R.id.button2);
         mySQLite = new MySQLite(this);
         sqLiteDatabase = mySQLite.getWritableDatabase();
         databaseDump = new DatabaseDump(this, sqLiteDatabase, "數據文檔");
@@ -184,8 +170,7 @@ public class MainActivity extends AppCompatActivity {
     void clearAllData(){
         listAdapter2.clear();
         listAdapter2.notifyDataSetChanged();
-//        mySQLite.deleteAll();
-
+        mySQLite.deleteAll();
     }
 
 
@@ -261,8 +246,6 @@ public class MainActivity extends AppCompatActivity {
         if(spfList2!=null)
             spfList2 = tinydb.getListString("Data2");
 
-//        listAdapter2 = new ArrayAdapter<String>(MainActivity.this,android.R.layout.simple_list_item_1,spfList2);
-
         listAdapter2 = new ArrayAdapter<String>(MainActivity.this,android.R.layout.simple_list_item_1,spfList2){
             @Override
             public View getView(int position, View convertView, ViewGroup parent) {
@@ -275,21 +258,22 @@ public class MainActivity extends AppCompatActivity {
 
         listView.setAdapter(listAdapter2);
 
-        button.setOnClickListener(new View.OnClickListener() {
+        exportButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 if (!hasStorePermission()) requestPermission();
                 tinydb.putListString("Data2", spfList2);
                 Log.e(">>>export", "export");
                 databaseDump.writeExcel("data_table");
-                databaseDump.exportData();
+//                databaseDump.exportData();
 //                sendEmail(); //tinydb.clear(); //listAdapter2.clear();
             }
         });
-        button2.setOnClickListener(new View.OnClickListener() {
+        clearDataButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                listAdapter2.clear();
+//                listAdapter2.clear();
+                clearAllData();
             }
         });
 
@@ -325,7 +309,9 @@ public class MainActivity extends AppCompatActivity {
                     public void run() {
 //                        Log.e(">>>insert sql", "(date,value,time) =" + currentDateTimeString + "  " + currentDateTimeString + "  "+ seekBar2.getProgressFloat());
 //                        mySQLite.insert("14 Mar 2018", "8:56:36 am", seekBar2.getProgressFloat());
-//                        spfList2.add("\n數值:" + String.valueOf(seekBar2.getProgressFloat()) + "   時間:" + currentDateTimeString + "\n");
+                        mySQLite.insert(currentDateTimeString, currentDateTimeString, seekBar2.getProgressFloat());
+                        Log.e(">>>", "sql now : " + mySQLite.getAll());
+                        spfList2.add("\n數值:" + String.valueOf(seekBar2.getProgressFloat()) + "   時間:" + currentDateTimeString + "\n");
                         listAdapter2.notifyDataSetChanged();
                     }
                 });
@@ -336,52 +322,8 @@ public class MainActivity extends AppCompatActivity {
     protected void onPause() {
         super.onPause();
         tinydb.putListString("Data2", spfList2);
-//        if(spfList2!=null)
-//            spfList2 = tinydb.getListString("Data2");
     }
 
-    protected void sendEmail() {
-//        String[] CC = {"cheryl.gao@inno-orz.com"}; //backup
-        Intent emailIntent = new Intent(Intent.ACTION_SEND);
-        emailIntent.setData(Uri.parse("mail to:"));
-        emailIntent.setType("text/plain");
-
-        emailIntent.putExtra(Intent.EXTRA_EMAIL, TO);
-//        emailIntent.putExtra(Intent.EXTRA_CC, CC);
-        emailIntent.putExtra(Intent.EXTRA_SUBJECT, "Test Result");
-        emailIntent.putExtra(Intent.EXTRA_TEXT, "紀錄如下 : " + spfList2.toString() + "\n \n \n- \n \n \n");
-
-        try {
-            startActivity(Intent.createChooser(emailIntent, "Send mail..."));
-//            finish();
-        } catch (android.content.ActivityNotFoundException ex) {
-            Toast.makeText(MainActivity.this,
-                    "There is no email client installed.", Toast.LENGTH_SHORT).show();
-        }
-    }
-
-/*
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.menu_main, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        if(item.getItemId() == R.id.cheryl)
-        {
-//            Toast.makeText(this,"Hello :)",Toast.LENGTH_SHORT).show();
-//            getFacebookIntent();
-
-            Intent facebookIntent = new Intent(Intent.ACTION_VIEW);
-            String facebookUrl = getFacebookPageURL(this);
-            facebookIntent.setData(Uri.parse(facebookUrl));
-            startActivity(facebookIntent);
-        }
-        return super.onOptionsItemSelected(item);
-    }
-*/
 }
 
 

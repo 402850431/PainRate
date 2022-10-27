@@ -45,16 +45,19 @@ public class DatabaseDump {
 
             String tableName;
             while (cur.getPosition() < cur.getCount()) {
-                tableName = cur.getString(cur.getColumnIndex("value"));
+                tableName = cur.getString(cur.getColumnIndex("_id"));
+//                tableName = cur.getString(cur.getColumnIndex("value"));
+
+                Log.e(">>>", "tableName : " + tableName);
 
                 // don't process these two tables since they are used
                 // for metadata
+                /*
                 if (!tableName.equals("android_metadata")
                         && !tableName.equals("sqlite_sequence")) {
-//                    writeExcel(tableName);
-                    writeExcel("data_table");
+                    writeExcel(tableName);
                 }
-
+*/
                 cur.moveToNext();
             }
         } catch (Exception e) {
@@ -69,41 +72,42 @@ public class DatabaseDump {
      */
     public void writeExcel(String tableName) {
         WritableWorkbook wwb = null;
-        String fileName;
+        String filePath;
 //        fileName = "/sdcard/QuestionData/" + tableName + ".xls";
-        fileName = Environment.getExternalStorageDirectory().toString() + File.separator + tableName + ".xls";
+//        fileName = Environment.getExternalStorageDirectory().toString() + File.separator + tableName + ".xls";
+        filePath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).toString() + File.separator + tableName + ".xls";
         int r = 0;
 
         String sql = "select * from " + tableName;
-        Log.e(">>>", "writeExcel sql : " + sql);
+        Log.e(">>>", "writeExcel filePath : " + filePath);
         Cursor cur = mDb.rawQuery(sql, new String[0]);
         int numcols = cur.getColumnCount();
         int numrows = cur.getCount();
-         Log.e("row", numrows + "");
-         Log.e("col", numcols + "");
+        Log.e("row", numrows + "");
+        Log.e("col", numcols + "");
 
         String records[][] = new String[numrows + 1][numcols];// 存放答案，多一行标题行
 
-        if (cur.moveToFirst()) {
-            while (cur.getPosition() < cur.getCount()) {
-                for (int c = 0; c < numcols; c++) {
-                    if (r == 0) {
-                        records[r][c] = cur.getColumnName(c);
-                        records[r + 1][c] = cur.getString(c);
-                    } else {
-                        records[r + 1][c] = cur.getString(c);
-                    }
-                      Log.e("value" + r + " " + c, records[r][c]);
-                }
-                cur.moveToNext();
-                r++;
-            }
-
-            cur.close();
-        }
         try {
+            if (cur.moveToFirst()) {
+                while (cur.getPosition() < cur.getCount()) {
+                    for (int c = 0; c < numcols; c++) {
+                        if (r == 0) {
+                            records[r][c] = cur.getColumnName(c);
+                            records[r + 1][c] = cur.getString(c);
+                        } else {
+                            records[r + 1][c] = cur.getString(c);
+                        }
+                        Log.e("value" + r + " " + c, records[r][c]);
+                    }
+                    cur.moveToNext();
+                    r++;
+                }
+
+                cur.close();
+            }
             // 首先要使用Workbook类的工厂方法创建一个可写入的工作薄(Workbook)对象
-            wwb = Workbook.createWorkbook(new File(fileName));
+            wwb = Workbook.createWorkbook(new File(filePath));
         } catch (IOException e) {
             e.printStackTrace();
             Toast.makeText(mContext, e.toString(), Toast.LENGTH_LONG).show();
@@ -122,9 +126,6 @@ public class DatabaseDump {
                     try {
                         // 将生成的单元格添加到工作表中
                         ws.addCell(labelC);
-                    } catch (RowsExceededException e) {
-                        e.printStackTrace();
-                        Toast.makeText(mContext, e.toString(), Toast.LENGTH_LONG).show();
                     } catch (WriteException e) {
                         e.printStackTrace();
                         Toast.makeText(mContext, e.toString(), Toast.LENGTH_LONG).show();
@@ -138,10 +139,10 @@ public class DatabaseDump {
                 wwb.write();
                 // 关闭资源，释放内存
                 wwb.close();
-            } catch (IOException e) {
+                Toast.makeText(mContext, "export succeed. please check on " + filePath, Toast.LENGTH_LONG).show();
+            } catch (IOException | WriteException e) {
                 e.printStackTrace();
-            } catch (WriteException e) {
-                e.printStackTrace();
+                Toast.makeText(mContext, e.toString(), Toast.LENGTH_LONG).show();
             }
         }
     }
