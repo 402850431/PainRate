@@ -26,6 +26,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.innooz.seekbar2.tools.DatabaseDump;
+import com.example.innooz.seekbar2.tools.DatetimeExtKt;
 import com.example.innooz.seekbar2.tools.MySQLite;
 import com.example.innooz.seekbar2.tools.TinyDB;
 import com.xw.repo.BubbleSeekBar;
@@ -261,12 +262,13 @@ public class MainActivity extends AppCompatActivity {
         exportButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (!hasStorePermission()) requestPermission();
-                tinydb.putListString("Data2", spfList2);
-                Log.e(">>>export", "export");
-                databaseDump.writeExcel("data_table");
-//                databaseDump.exportData();
-//                sendEmail(); //tinydb.clear(); //listAdapter2.clear();
+                if (!hasStorePermission()) {
+                    requestPermission();
+                } else {
+                    tinydb.putListString("Data2", spfList2);
+                    Log.e(">>>export", "export");
+                    databaseDump.writeExcel("data_table");
+                }
             }
         });
         clearDataButton.setOnClickListener(new View.OnClickListener() {
@@ -289,7 +291,7 @@ public class MainActivity extends AppCompatActivity {
 
     private boolean hasStorePermission() {
         return (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED)
-                && ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED;
+                || ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED;
     }
 
 
@@ -304,13 +306,12 @@ public class MainActivity extends AppCompatActivity {
 
         public void run() {
                 currentDateTimeString = DateFormat.getDateTimeInstance().format(new Date());
+                String nowDate = DatetimeExtKt.toTimeFormat(new Date(System.currentTimeMillis()), DatetimeExtKt.YMD_FORMAT);
+                String nowTime = DatetimeExtKt.toTimeFormat(new Date(System.currentTimeMillis()), DatetimeExtKt.HM_FORMAT);
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-//                        Log.e(">>>insert sql", "(date,value,time) =" + currentDateTimeString + "  " + currentDateTimeString + "  "+ seekBar2.getProgressFloat());
-//                        mySQLite.insert("14 Mar 2018", "8:56:36 am", seekBar2.getProgressFloat());
-                        mySQLite.insert(currentDateTimeString, currentDateTimeString, seekBar2.getProgressFloat());
-                        Log.e(">>>", "sql now : " + mySQLite.getAll());
+                        mySQLite.insert(nowDate, nowTime, seekBar2.getProgressFloat());
                         spfList2.add("\n數值:" + String.valueOf(seekBar2.getProgressFloat()) + "   時間:" + currentDateTimeString + "\n");
                         listAdapter2.notifyDataSetChanged();
                     }

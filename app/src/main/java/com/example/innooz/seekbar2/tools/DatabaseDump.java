@@ -38,7 +38,6 @@ public class DatabaseDump {
               Log.e("mdb", mDb.getPath());
             // get the tables out of the given sqlite database
             String sql = "SELECT * FROM data_table";
-            Log.e(">>>", "export sql : " + sql);
 
             Cursor cur = mDb.rawQuery(sql, new String[0]);
             cur.moveToFirst();
@@ -48,7 +47,6 @@ public class DatabaseDump {
                 tableName = cur.getString(cur.getColumnIndex("_id"));
 //                tableName = cur.getString(cur.getColumnIndex("value"));
 
-                Log.e(">>>", "tableName : " + tableName);
 
                 // don't process these two tables since they are used
                 // for metadata
@@ -79,7 +77,6 @@ public class DatabaseDump {
         int r = 0;
 
         String sql = "select * from " + tableName;
-        Log.e(">>>", "writeExcel filePath : " + filePath);
         Cursor cur = mDb.rawQuery(sql, new String[0]);
         int numcols = cur.getColumnCount();
         int numrows = cur.getCount();
