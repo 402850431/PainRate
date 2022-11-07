@@ -12,7 +12,7 @@ public class MySQLite extends SQLiteOpenHelper {
 
     private final static String DATABASE_NAME = "note_database";
     private final static int DATABASE_VERSION = 1;
-    private final static String TABLE_NAME = "data_table";
+    final static String TABLE_NAME = "data_table";
 //    private final static String _ID = "_id";
     private final static String DATE = "date";
     private final static String TIME = "time";

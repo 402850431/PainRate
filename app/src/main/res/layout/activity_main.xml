@@ -7,6 +7,19 @@
     android:orientation="vertical"
     tools:context="com.example.innooz.seekbar2.MainActivity">
 
+    <TextView
+        android:id="@+id/tvFileInfo"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="8dp"
+        app:layout_constraintBottom_toTopOf="@+id/seekbar2"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="1"
+        app:layout_constraintVertical_bias="0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:text="檔案位置：download/blah/blah\n檔案名稱：testName" />
+
 
     <com.xw.repo.BubbleSeekBar
         android:id="@+id/seekbar2"
@@ -14,7 +27,7 @@
         android:layout_height="wrap_content"
         android:layout_marginLeft="8dp"
         android:layout_marginRight="8dp"
-        app:bsb_always_show_bubble="true"
+        app:bsb_always_show_bubble="false"
         app:bsb_auto_adjust_section_mark="false"
         app:bsb_bubble_color="@color/yellow"
         app:bsb_bubble_text_color="@android:color/black"

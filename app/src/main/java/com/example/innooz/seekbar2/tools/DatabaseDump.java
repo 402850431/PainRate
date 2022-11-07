@@ -1,5 +1,7 @@
 package com.example.innooz.seekbar2.tools;
 
+import static com.example.innooz.seekbar2.tools.MySQLite.TABLE_NAME;
+
 import java.io.File;
 import java.io.IOException;
 import jxl.Workbook;
@@ -7,7 +9,6 @@ import jxl.write.Label;
 import jxl.write.WritableSheet;
 import jxl.write.WritableWorkbook;
 import jxl.write.WriteException;
-import jxl.write.biff.RowsExceededException;
 
 import android.content.Context;
 import android.database.Cursor;
@@ -68,15 +69,15 @@ public class DatabaseDump {
      *
      *            要生成的Excel文件名
      */
-    public void writeExcel(String tableName) {
+    public void writeExcel(String fileName, OnSuccessListener successListener) {
         WritableWorkbook wwb = null;
         String filePath;
 //        fileName = "/sdcard/QuestionData/" + tableName + ".xls";
 //        fileName = Environment.getExternalStorageDirectory().toString() + File.separator + tableName + ".xls";
-        filePath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).toString() + File.separator + tableName + ".xls";
+        filePath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).toString() + File.separator + fileName + ".xls";
         int r = 0;
 
-        String sql = "select * from " + tableName;
+        String sql = "select * from " + TABLE_NAME;
         Cursor cur = mDb.rawQuery(sql, new String[0]);
         int numcols = cur.getColumnCount();
         int numrows = cur.getCount();
@@ -136,7 +137,8 @@ public class DatabaseDump {
                 wwb.write();
                 // 关闭资源，释放内存
                 wwb.close();
-                Toast.makeText(mContext, "export succeed. please check on " + filePath, Toast.LENGTH_LONG).show();
+                Toast.makeText(mContext, "Export succeed.\nPlease check on " + filePath, Toast.LENGTH_LONG).show();
+                successListener.onSuccess(filePath);
             } catch (IOException | WriteException e) {
                 e.printStackTrace();
                 Toast.makeText(mContext, e.toString(), Toast.LENGTH_LONG).show();

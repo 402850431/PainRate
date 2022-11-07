@@ -5,6 +5,7 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 const val YMD_FORMAT = "yyyy/MM/dd"
+const val YMDHM_FORMAT = "yyyyMMddHHmm"
 const val MD_FORMAT = "MM/dd"
 const val MDHM_FORMAT = "MM/dd(E) HH:mm"
 const val HM_FORMAT = "hh:mm:ss"
